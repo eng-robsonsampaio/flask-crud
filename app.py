@@ -21,8 +21,8 @@ games = []
 games.append(game1)
 games.append(game2)
 
-@app.route('/init')
-def greeting():
+@app.route('/')
+def index():
     return render_template('list_of_games.html', title='Game', games=games)
 
 @app.route('/register')
@@ -36,6 +36,6 @@ def create():
                     console=request.form['console'])
     games.append(new_game)
 
-    return redirect(url_for('greeting'))
+    return redirect(url_for('index'))
 
 app.run()
