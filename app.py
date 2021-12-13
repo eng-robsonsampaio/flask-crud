@@ -3,6 +3,8 @@ from re import template
 from flask import Flask, Response, render_template, request, url_for, flash, redirect
 import os
 
+from flask.typing import TemplateFilterCallable
+
 key = os.urandom(24).hex()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = key
@@ -37,5 +39,18 @@ def create():
     games.append(new_game)
 
     return redirect(url_for('index'))
+
+@app.route('/auth', methods=['POST'])
+def authentication(): 
+    if ('senha' == request.form['password']):
+        print('Correct')
+        return redirect('/')
+    else:
+        print('False')
+        return redirect('/login')
+
+@app.route('/login')
+def login():
+    return render_template('login.html', title='Login')
 
 app.run()
