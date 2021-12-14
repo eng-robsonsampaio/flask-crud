@@ -1,10 +1,10 @@
 {% extends 'template.html'%}
 {% block content %}
-<form action='/auth' method="POST">
-    <label for="username">name:</label><br>
-    <input type="text" id="username" name="name" value={{ request.form['name'] }}><br>
-    <label for="password">password:</label><br>
-    <input type="password" id="password" name="password" value={{ request.form['password'] }}><br><br>
-    <input type="submit" value="Submit">
-</form>
+    <form action='/auth' method="POST">
+        <label for="user">name:</label><br>
+        <input type="text" id="user" name="user" value={{ request.form['user'] }}><br>
+        <label for="password">password:</label><br>
+        <input type="password" id="password" name="password" value={{ request.form['password'] }}><br><br>
+        <input type="submit" value="Submit">
+    </form>
 {% endblock %}

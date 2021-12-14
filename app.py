@@ -1,6 +1,6 @@
 from datetime import timedelta
 from re import template
-from flask import Flask, Response, render_template, request, url_for, flash, redirect
+from flask import Flask, Response, render_template, request, url_for, session, redirect, flash
 import os
 
 from flask.typing import TemplateFilterCallable
@@ -42,11 +42,13 @@ def create():
 
 @app.route('/auth', methods=['POST'])
 def authentication(): 
-    if ('senha' == request.form['password']):
+    if ('admin' == request.form['password'] and 'user' == request.form['user']):
+        flash(request.form['user'] + ' success')
+        session['user_logged'] = request.form['user']
         print('Correct')
         return redirect('/')
     else:
-        print('False')
+        flash('Wrong user or password')
         return redirect('/login')
 
 @app.route('/login')
