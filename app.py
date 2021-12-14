@@ -29,6 +29,8 @@ def index():
 
 @app.route('/register')
 def register():
+    if('user_logged' not in session or session['user_logged'] == None):
+        return redirect('/login')
     return render_template('register.html', title='New Game')
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -55,4 +57,10 @@ def authentication():
 def login():
     return render_template('login.html', title='Login')
 
-app.run()
+@app.route('/logout')
+def logout():
+    session['user_logged'] = None
+    flash('None user logged!')
+    return redirect('/')
+
+app.run(debug=True)
