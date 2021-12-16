@@ -30,7 +30,7 @@ def index():
 @app.route('/register')
 def register():
     if('user_logged' not in session or session['user_logged'] == None):
-        return redirect('/login')
+        return redirect('/login?next=register')
     return render_template('register.html', title='New Game')
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -42,20 +42,26 @@ def create():
 
     return redirect(url_for('index'))
 
-@app.route('/auth', methods=['POST'])
-def authentication(): 
-    if ('admin' == request.form['password'] and 'user' == request.form['user']):
-        flash(request.form['user'] + ' success')
-        session['user_logged'] = request.form['user']
-        print('Correct')
-        return redirect('/')
-    else:
-        flash('Wrong user or password')
-        return redirect('/login')
+@app.route('/auth', methods=['POST',])
+def auth():
+    if request.method == 'POST':
+        if ('admin' == request.form['password']):
+            session['user_logged'] = request.form['user'] 
+            flash(request.form['user'] + ' success')
+
+            next_page = request.form['next']
+            return redirect('/{}'.format(next_page))
+        else:
+            flash('Wrong user or password')
+            return redirect('/login')
+
 
 @app.route('/login')
 def login():
-    return render_template('login.html', title='Login')
+    next_page = request.args.get('next')
+    print(f'Next: {next}')
+    return render_template('login.html', next=next_page)
+    
 
 @app.route('/logout')
 def logout():

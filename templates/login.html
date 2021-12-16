@@ -1,10 +1,30 @@
-{% extends 'template.html'%}
-{% block content %}
-    <form action='/auth' method="POST">
-        <label for="user">name:</label><br>
-        <input type="text" id="user" name="user" value={{ request.form['user'] }}><br>
-        <label for="password">password:</label><br>
-        <input type="password" id="password" name="password" value={{ request.form['password'] }}><br><br>
-        <input type="submit" value="Submit">
-    </form>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Login</title>
+        <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.css')}}"/>
+    </head>
+    <body>
+        <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul id="messages" class="list-unstyled">
+                    {% for message in messages %}
+                    <li class="alert alert-success">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <h1>Login</h1>
+        <form method="POST" action='/auth' >
+            <input type="text" name="next" value="{{ next or '' }}">
+            <label >name:</label><br>
+            <input type="text" id="user" name="user" value={{ request.form['user'] }}><br>
+            <label >password:</label><br>
+            <input type="password" id="password" name="password" value={{ request.form['password'] }}><br><br>
+            <input type="submit" value="Submit">
+        </form>
+        </div>
+    </body>
+</html>
