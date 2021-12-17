@@ -16,6 +16,19 @@ class Game:
         self.category = category
         self.console = console
 
+class User:
+    def __init__(self, id, name, psk) -> None:
+        self.id = id
+        self.name = name
+        self.psk = psk
+
+user1 = User('Robson', 'Robson Sampaio', '9874')
+user2 = User('Gabi', 'Gabi Sampaio', '1234')
+user3 = User('Admin', 'admin', 'admin')
+users = {user1.id: user1, 
+         user2.id: user2, 
+         user3.id: user3}
+
 game1 = Game(name='Super Mario', category='Action', console='SNES')
 game2 = Game(name='Metal Gear', category='Action', console='PSE')
 
@@ -45,14 +58,21 @@ def create():
 @app.route('/auth', methods=['POST',])
 def auth():
     if request.method == 'POST':
-        if ('admin' == request.form['password']):
-            session['user_logged'] = request.form['user'] 
-            flash(request.form['user'] + ' success')
+        print(f'{request.form["user"] in users} and {request.form["password"]}')
+        if request.form['user'] in users:
+            user = users[request.form['user']]
+            print(f'{user.psk} and {request.form["password"]}')
+            if user.psk == str(request.form['password']):
+                session['user_logged'] = user.id
+                flash(user.name + ' success')
 
-            next_page = request.form['next']
-            return redirect('/{}'.format(next_page))
-        else:
-            flash('Wrong user or password')
+                next_page = request.form['next']
+                return redirect('/{}'.format(next_page))
+            else:
+                flash('Wrong password')
+                return redirect('/login')
+        else: 
+            flash('User doesn\'t exist')
             return redirect('/login')
 
 
