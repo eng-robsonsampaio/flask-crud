@@ -2,14 +2,15 @@ from datetime import timedelta
 from re import template
 from flask import Flask, Response, render_template, request, url_for, session, redirect, flash
 import os
-import MySQLdb
 
-from flask.typing import TemplateFilterCallable
 
 key = os.urandom(24).hex()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = key
-            
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://test:@localhost/jogoteca'
+
+
 class Game:
     def __init__(self, name: str, category: str, console: str) -> None:
         self.name = name
