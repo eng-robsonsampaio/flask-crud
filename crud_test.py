@@ -88,14 +88,16 @@ def update(id):
 # delete user by id
 @app.route('/user/<id>', methods=['DELETE'])
 def delete_user(id):
+    user = User.query.get(id)
     try:
-        user = User.query.filter_by(id=id).delete()
+        db.session.delete(user)
         db.session.commit()
 
-        return my_response(200, 'user', {}, 'deleted')
+        return my_response(200, 'user', user.to_json(), 'deleted')
     except Exception as e:
         print(e)
         print('Not able to delete user')
+        return my_response(400, 'user', {}, 'fail')
 
 
 def test_query(id=2):
