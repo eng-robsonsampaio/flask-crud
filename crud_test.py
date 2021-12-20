@@ -19,6 +19,8 @@ class User(db.Model):
     def to_json(self):
         return {"id":self.id, "name":self.name, "email":self.email}
 
+
+# retrieve all
 @app.route('/', methods=['GET'])
 def retrieve_all():
     users = User.query.all()
@@ -27,6 +29,7 @@ def retrieve_all():
     return my_response(200, "users", users, "Ok")
 
 
+# retrieve one users
 @app.route('/user/<id>', methods=['GET'])
 def retrieve_user(id):
     user = User.query.get(id)
@@ -34,6 +37,7 @@ def retrieve_user(id):
     return my_response(200, 'user', user, 'ok')
 
 
+# add user
 @app.route('/user', methods=['POST'])
 def insert_user():
     body = request.get_json()
@@ -42,10 +46,11 @@ def insert_user():
         user = User(name=body['name'], email=body['email'])
         db.session.add(user)
         db.session.commit()
-        return my_response(200, 'user', user, 'User created')
+        return my_response(200, 'user', user.to_json(), 'User created')
     except Exception as e:
         print(e)
         return my_response(400, 'user', {}, 'Erro inserting user')
+
 
 def my_response(status, content_name, content_value, msg=False):
     body = {}
@@ -57,10 +62,45 @@ def my_response(status, content_name, content_value, msg=False):
     return Response(json.dumps(body), status=status, mimetype="application/json")
 
 
+# update user info
+@app.route('/user/<id>', methods=['PUT'])
+def update(id):
+    user = User.query.get(id)
+    body = request.get_json()
+    try:
+        if ('name' in body):
+            user.name = body['name']
+        if ('email' in body):
+            user.email = body['email']
+        
+        db.session.add(user)
+        db.session.commit()
+
+        return my_response(200, 'user', {user.to_json()}, 'ok')
+
+    except Exception as e:
+        print(e)
+        print('Não foi possível atualizar o usuário')
+
+    user = user.to_json()
+
+
+# delete user by id
+@app.route('/user/<id>', methods=['DELETE'])
+def delete_user(id):
+    try:
+        user = User.query.filter_by(id=id).delete()
+        db.session.commit()
+
+        return my_response(200, 'user', {}, 'deleted')
+    except Exception as e:
+        print(e)
+        print('Not able to delete user')
+
+
 def test_query(id=2):
     users = User.query.get(id)
     # users = [user.to_json() for user in users]
     print(users.to_json())
 
 app.run(debug=True)
-# test_query()
