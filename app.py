@@ -1,93 +1,120 @@
-from datetime import timedelta
-from re import template
-from flask import Flask, Response, render_template, request, url_for, session, redirect, flash
-import os
+
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, Response
+import os, json
 
 
 key = os.urandom(24).hex()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = key
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://test:@localhost/jogoteca'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://test:1234@localhost/jogoteca'
 
 
-class Game:
-    def __init__(self, name: str, category: str, console: str) -> None:
-        self.name = name
-        self.category = category
-        self.console = console
+db = SQLAlchemy(app)
 
-class User:
-    def __init__(self, id, name, psk) -> None:
-        self.id = id
-        self.name = name
-        self.psk = psk
+class Game(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20))
+    category = db.Column(db.String(20))
+    console = db.Column(db.String(20))
 
-user1 = User('Robson', 'Robson Sampaio', '9874')
-user2 = User('Gabi', 'Gabi Sampaio', '1234')
-user3 = User('Admin', 'admin', 'admin')
-users = {user1.id: user1, 
-         user2.id: user2, 
-         user3.id: user3}
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20))
+    password = db.Column(db.String(20))
 
-game1 = Game(name='Super Mario', category='Action', console='SNES')
-game2 = Game(name='Metal Gear', category='Action', console='PSE')
+    def to_json(self):
+        return {'id': self.id, 'name': self.name, 'password':self.password}
 
-games = []
-games.append(game1)
-games.append(game2)
-
-@app.route('/')
-def index():
-    return render_template('list_of_games.html', title='Game', games=games)
-
-@app.route('/register')
-def register():
-    if('user_logged' not in session or session['user_logged'] == None):
-        return redirect('/login?next=register')
-    return render_template('register.html', title='New Game')
-
-@app.route('/create', methods=['GET', 'POST'])
-def create():
-    new_game = Game(name=request.form['name'], 
-                    category=request.form['category'],
-                    console=request.form['console'])
-    games.append(new_game)
-
-    return redirect(url_for('index'))
-
-@app.route('/auth', methods=['POST',])
-def auth():
-    if request.method == 'POST':
-        print(f'{request.form["user"] in users} and {request.form["password"]}')
-        if request.form['user'] in users:
-            user = users[request.form['user']]
-            print(f'{user.psk} and {request.form["password"]}')
-            if user.psk == str(request.form['password']):
-                session['user_logged'] = user.id
-                flash(user.name + ' success')
-
-                next_page = request.form['next']
-                return redirect('/{}'.format(next_page))
-            else:
-                flash('Wrong password')
-                return redirect('/login')
-        else: 
-            flash('User doesn\'t exist')
-            return redirect('/login')
+@app.route('/users', methods=['GET'])
+def view_users():
+    users = User.query.all()
+    users = [user.to_json() for user in users]
+    return my_response(200, 'users', users, 'ok')
 
 
-@app.route('/login')
-def login():
-    next_page = request.args.get('next')
-    print(f'Next: {next}')
-    return render_template('login.html', next=next_page)
+@app.route('/games', methods=['GET'])
+def view_users():
+    games = Game.query.all()
+    games = [game.to_json() for game in games]
+    return my_response(200, 'games', games, 'ok')
+
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    body = request.get_json()
+
+    try:
+        user = User(name=body['name'], password=body['password'])
+        db.session.add(user)
+        db.session.commit()
+        return my_response(200, 'user', user.to_json(), 'Salved')
+
+    except Exception as e:
+        print(e)
+        print('Could\'nt create user')
+
+def my_response(status, content_name, content_value, msg=False):
+    body = {}
+    body[content_name] = content_value
+
+    if (msg):
+        body['mensage'] = msg
+
+    return Response(json.dumps(body), status=status, mimetype="application/json")
+
+# @app.route('/')
+# def index():
+#     return render_template('list_of_games.html', title='Game', games=games)
+
+# @app.route('/register')
+# def register():
+#     if('user_logged' not in session or session['user_logged'] == None):
+#         return redirect('/login?next=register')
+#     return render_template('register.html', title='New Game')
+
+# @app.route('/create', methods=['GET', 'POST'])
+# def create():
+#     new_game = Game(name=request.form['name'], 
+#                     category=request.form['category'],
+#                     console=request.form['console'])
+#     games.append(new_game)
+
+#     return redirect(url_for('index'))
+
+# @app.route('/auth', methods=['POST',])
+# def auth():
+#     if request.method == 'POST':
+#         print(f'{request.form["user"] in users} and {request.form["password"]}')
+#         if request.form['user'] in users:
+#             user = users[request.form['user']]
+#             print(f'{user.psk} and {request.form["password"]}')
+#             if user.psk == str(request.form['password']):
+#                 session['user_logged'] = user.id
+#                 flash(user.name + ' success')
+
+#                 next_page = request.form['next']
+#                 return redirect('/{}'.format(next_page))
+#             else:
+#                 flash('Wrong password')
+#                 return redirect('/login')
+#         else: 
+#             flash('User doesn\'t exist')
+#             return redirect('/login')
+
+
+# @app.route('/login')
+# def login():
+#     next_page = request.args.get('next')
+#     print(f'Next: {next}')
+#     return render_template('login.html', next=next_page)
     
 
-@app.route('/logout')
-def logout():
-    session['user_logged'] = None
-    flash('None user logged!')
-    return redirect('/')
+# @app.route('/logout')
+# def logout():
+#     session['user_logged'] = None
+#     flash('None user logged!')
+#     return redirect('/')
+
 
 app.run(debug=True)
