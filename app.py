@@ -19,6 +19,10 @@ class Game(db.Model):
     category = db.Column(db.String(20))
     console = db.Column(db.String(20))
 
+    def to_json(self):
+        return {'id': self.id, 'name': self.name, 'category':self.category, 'console':self.console}
+
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20))
@@ -27,18 +31,13 @@ class User(db.Model):
     def to_json(self):
         return {'id': self.id, 'name': self.name, 'password':self.password}
 
+
 @app.route('/users', methods=['GET'])
-def view_users():
+def users():
     users = User.query.all()
     users = [user.to_json() for user in users]
     return my_response(200, 'users', users, 'ok')
 
-
-@app.route('/games', methods=['GET'])
-def view_users():
-    games = Game.query.all()
-    games = [game.to_json() for game in games]
-    return my_response(200, 'games', games, 'ok')
 
 @app.route('/add_user', methods=['POST'])
 def add_user():
@@ -53,6 +52,29 @@ def add_user():
     except Exception as e:
         print(e)
         print('Could\'nt create user')
+
+
+@app.route('/games', methods=['GET'])
+def games():
+    games = Game.query.all()
+    games = [game.to_json() for game in games]
+    return my_response(200, 'games', games, 'ok')
+
+
+@app.route('/add_game', methods=['POST'])
+def add_game():
+    body = request.get_json()
+
+    try:
+        game = Game(name=body['name'], category=body['category'], console=body['console'])
+        db.session.add(game)
+        db.session.commit()
+        return my_response(200, 'game', game.to_json(), 'Salved')
+
+    except Exception as e:
+        print(e)
+        print('Could\'nt create game')
+
 
 def my_response(status, content_name, content_value, msg=False):
     body = {}
