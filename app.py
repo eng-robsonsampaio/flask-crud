@@ -1,7 +1,11 @@
 
+from flask.helpers import url_for
+from flask.templating import render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, Response
 import os, json
+
+from werkzeug.utils import redirect
 
 
 key = os.urandom(24).hex()
@@ -32,6 +36,15 @@ class User(db.Model):
         return {'id': self.id, 'name': self.name, 'password':self.password}
 
 
+@app.route('/')
+def index():
+    games = Game.query.all()
+    return render_template('list_of_games.html', title='Games', games=games)
+
+@app.route('/register_new_game')
+def register_new_game():
+    return render_template('register.html', title='New Game')
+
 @app.route('/users', methods=['GET'])
 def users():
     users = User.query.all()
@@ -61,15 +74,18 @@ def games():
     return my_response(200, 'games', games, 'ok')
 
 
-@app.route('/add_game', methods=['POST'])
+@app.route('/add_game', methods=['GET', 'POST'],)
 def add_game():
-    body = request.get_json()
+    # body = request.get_json()
+    name = request.args.get('name')
+    category = request.args.get('category')
+    console = request.args.get('console')
 
     try:
-        game = Game(name=body['name'], category=body['category'], console=body['console'])
+        game = Game(name=name, category=category, console=console)
         db.session.add(game)
         db.session.commit()
-        return my_response(200, 'game', game.to_json(), 'Salved')
+        return redirect(url_for('index'))
 
     except Exception as e:
         print(e)

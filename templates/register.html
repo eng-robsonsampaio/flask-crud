@@ -1,6 +1,6 @@
 {% extends "template.html" %}
 {% block content %}
-	<form action='/create' method="POST">
+	<form action='/add_game',method="POST">
 	    <label for="gameName">Game:</label><br>
 	    <input type="text" id="gameName" name="name" value={{ request.form['name'] }}><br>
 	    <label for="gameCategory">Category:</label><br>
