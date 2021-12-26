@@ -18,7 +18,7 @@
         {% endwith %}
         <h1>Login</h1>
         <form method="POST" action='/auth' >
-            <input type="text" name="next" value="{{ next or '' }}">
+            <input type="hidden" name="next" value="{{ next or '/' }}">
             <label >name:</label><br>
             <input type="text" id="user" name="user" value={{ request.form['user'] }}><br>
             <label >password:</label><br>

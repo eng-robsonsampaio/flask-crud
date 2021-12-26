@@ -1,4 +1,5 @@
 
+import re
 from flask.helpers import url_for
 from flask.templating import render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -41,9 +42,11 @@ def index():
     games = Game.query.all()
     return render_template('list_of_games.html', title='Games', games=games)
 
+
 @app.route('/register_new_game')
 def register_new_game():
     return render_template('register.html', title='New Game')
+    
 
 @app.route('/users', methods=['GET'])
 def users():
@@ -65,6 +68,20 @@ def add_user():
     except Exception as e:
         print(e)
         print('Could\'nt create user')
+    
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+
+@app.route('/auth', methods=['POST'])
+def auth():
+    name = request.args.get('name')
+    psk = request.args.get('password')
+    user = User.query.filter(User.name == name)
+
+    return redirect(url_for('index'))
 
 
 @app.route('/games', methods=['GET'])
@@ -156,3 +173,12 @@ def my_response(status, content_name, content_value, msg=False):
 
 
 app.run(debug=True)
+
+def test_crentials():
+    users =  User.query.all()
+    users = [user.to_json() for user in users]
+    print(users)
+    user = User.query.filter(User.id==1).first()
+    print('User: ', user.name)
+
+# test_crentials()
